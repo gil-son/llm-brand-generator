@@ -1,6 +1,6 @@
 import streamlit as st
 from agent import generate_branding
-from craiyon_api import generate_slogan_image  # arquivo com a função acima
+from pollinations_api import generate_slogan_image  # agora import correto
 
 st.title("🤖 Branding AI Assistant")
 st.write("Create name, slogan, and brand concept from a description.")
