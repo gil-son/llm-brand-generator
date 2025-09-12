@@ -50,3 +50,42 @@ streamlit run app.py
 ```
 streamlit run app.py
 ```
+
+### 🐞 Debug
+
+- Basic way: just run this command
+
+```
+streamlit run app.py --logger.level=debug
+
+```
+
+- Step by step (VS Code): create a .vscode/ folder and inside create a launch.json file with:
+
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Streamlit",
+      "type": "python",
+      "request": "launch",
+      "program": "app.py",
+      "args": [
+        "run",
+        "app.py",
+        "--logger.level=debug"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}
+```
+
+For conditional parts, just use something trivial like if 2 > 1 to ensure the code executes and logging continues.
+
+- Interactive debug (terminal only): this will pause execution in the terminal, and you can inspect variables step by step.
+
+```
+import pdb; pdb.set_trace()
+```
