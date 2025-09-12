@@ -56,13 +56,28 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=db.as_retriever(),
 )
 
-# Parse LLM response for brand name and slogan
+# Parse LLM response for brand name, slogan, and concept
 def parse_llm_response(response: str):
+    # Primeiro tenta pelo formato esperado (com **)
     name_match = re.search(r"\*\*Brand Name:\*\*\s*(.+)", response)
     slogan_match = re.search(r"\*\*Slogan:\*\*\s*(.+)", response)
+    concept_match = re.search(r"\*\*Branding Concept:\*\*\s*(.+)", response, re.DOTALL)
+
+    # Se não achar, tenta pegar versões mais soltas
+    if not name_match:
+        name_match = re.search(r"(?i)(?:Brand Name|Name)[:\-]?\s*([^\n]+)", response)
+
+    if not slogan_match:
+        slogan_match = re.search(r"(?i)(?:Slogan)[:\-]?\s*([^\n]+)", response)
+
+    if not concept_match:
+        concept_match = re.search(r"(?i)(?:Branding Concept)[:\-]?\s*(.+)", response, re.DOTALL)
+
     name = name_match.group(1).strip() if name_match else "Name not generated"
     slogan = slogan_match.group(1).strip() if slogan_match else "Slogan not generated"
-    return name, slogan
+    concept = concept_match.group(1).strip() if concept_match else "Concept not generated"
+
+    return name, slogan, concept
 
 # Generate branding
 def generate_branding(description: str):
@@ -70,29 +85,34 @@ def generate_branding(description: str):
     retriever = db.as_retriever(search_kwargs={"k": 3})
     docs = retriever.invoke(description)
     context = "\n".join([d.page_content for d in docs])
+    print("context:\n", context)
 
     # LLM prompt
     prompt = f"""
-You are a branding expert. Based on the description below and the provided references, create UNIQUE outputs.
-Do NOT copy text from the documents. Be creative and imaginative.
+You are a branding expert. Based on the description below and the provided references, create ONE SINGLE branding suggestion.
+
+⚠️ Important:
+- Return ONLY ONE brand name, ONE slogan, and ONE short branding concept.
+- Do NOT generate multiple options.
+- Follow this exact format:
+
+**Brand Name:** <creative brand name>  
+**Slogan:** <short impactful slogan>  
+**Branding Concept:** <short explanation>
 
 User description:
 {description}
 
 Reference keywords or insights:
 {context}
-
-Please generate in this format:
-**Brand Name:** <creative brand name>
-**Slogan:** <short impactful slogan>
 """
     response = llm.invoke(prompt)
-    print("LLM Response:", response)  # para debug
+    print("LLM Response:", response)
 
-    name, slogan = parse_llm_response(response)
+    name, slogan, concept = parse_llm_response(response)
 
     return {
         "name": name,
         "slogan": slogan,
-        "context": context
+        "explanation": concept
     }
