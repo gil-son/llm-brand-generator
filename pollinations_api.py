@@ -8,6 +8,7 @@ def generate_slogan_image(prompt: str):
     Falls back to a simple placeholder if request fails.
     """
     try:
+        print("Safe Prompt: ",safe_prompt)
         safe_prompt = prompt.replace(" ", "_")
         url = f"https://pollinations.ai/p/{safe_prompt}"
         response = requests.get(url, timeout=30)
