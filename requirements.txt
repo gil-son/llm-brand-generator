@@ -25,9 +25,5 @@ pandas
 pillow==11.3.0
 python-dotenv==1.1.0
 
-# Stable Diffusion (local image generation)
-diffusers==0.31.0
-transformers==4.44.2
-accelerate==0.33.0
-safetensors==0.4.5
-torch==2.8.0
+# Craiyon (Image generation)
+pollinations-api==0.1.5
