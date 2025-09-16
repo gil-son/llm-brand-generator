@@ -1,7 +1,8 @@
 import streamlit as st
 from agent import generate_branding
-from pollinations_api import generate_slogan_image
-from assets import LOGO_BASE64, SUGGESTED_NAME, SLOGAN_TEXT, BRANDING_TEXT, SLOGAN_IMAGE
+from pollinations_api import generate_logo_image
+from deepai_api import generate_slogan_palette
+from assets import LOGO_BASE64, SUGGESTED_NAME, SLOGAN_TEXT, BRANDING_TEXT, SLOGAN_IMAGE, PALLETES_IMAGE
 
 if "current_image" not in st.session_state:
     st.session_state.current_image = LOGO_BASE64
@@ -28,7 +29,10 @@ if st.button("Generate Branding"):
     if description.strip():
         with st.spinner("Generating..."):
             result = generate_branding(description)
-            slogan_img = generate_slogan_image(result["slogan"])
+            print("[logo_mark]:", result["logo_mark"])
+            slogan_img = generate_logo_image(result["logo_mark"])
+            print("[color]:", result["color"].lower())
+            palette_img, palette_text, palette_colors  = generate_slogan_palette(result["slogan"], query=result["color"].lower())
         
         col1, col2 = st.columns([2, 1])
 
@@ -69,11 +73,25 @@ if st.button("Generate Branding"):
                 f"""
                 <h3 style="display:flex; align-items:center; gap:10px;">
                     <img src="data:image/png;base64,{SLOGAN_IMAGE}" style="height:50px;">
-                    Slogan Visual:
+                    Logo Mark:
                 </h3>
                 """,
                 unsafe_allow_html=True
             )
             st.image(slogan_img)
+
+            st.markdown(
+                f"""
+                <h3 style="display:flex; align-items:center; gap:10px;">
+                    <img src="data:image/png;base64,{PALLETES_IMAGE}" style="height:50px;">
+                    Pallete Visual:
+                </h3>
+                """,
+                unsafe_allow_html=True
+            )
+            st.image(palette_img)
+            st.markdown(f"**Palette name:** {palette_text}")
+            st.markdown(f"**Colors:** {', '.join(palette_colors)}")
+            
     else:
         st.warning("Please enter a description before generating.")
