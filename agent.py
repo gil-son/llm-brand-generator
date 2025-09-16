@@ -34,18 +34,38 @@ def load_documents():
 # Load or create FAISS index
 def get_vectorstore():
     persist_dir = VECTORSTORE_PATH
+    index_path = os.path.join(persist_dir, "index.faiss")
 
-    if os.path.exists(os.path.join(persist_dir, "index.faiss")):
-        return FAISS.load_local(
-            persist_dir,
-            embeddings,
-            allow_dangerous_deserialization=True
+    # se já existe um índice salvo
+    if os.path.exists(index_path):
+        index_mtime = os.path.getmtime(index_path)  # última modificação do índice
+
+        # pega a última modificação entre os docs
+        docs_mtime = max(
+            os.path.getmtime(os.path.join(DOCS_PATH, f))
+            for f in os.listdir(DOCS_PATH)
         )
-    
-    docs = load_documents()
-    db = FAISS.from_documents(docs, embeddings)
-    db.save_local(persist_dir)
-    return db
+
+        # se os docs foram atualizados depois do índice -> rebuild
+        if docs_mtime > index_mtime:
+            print("📌 Detectamos atualização nos docs → reconstruindo FAISS...")
+            docs = load_documents()
+            db = FAISS.from_documents(docs, embeddings)
+            db.save_local(persist_dir)
+            return db
+        else:
+            print("✅ Usando FAISS em cache (nenhuma atualização nos docs).")
+            return FAISS.load_local(
+                persist_dir,
+                embeddings,
+                allow_dangerous_deserialization=True
+            )
+    else:
+        print("📌 Nenhum índice encontrado → criando FAISS novo...")
+        docs = load_documents()
+        db = FAISS.from_documents(docs, embeddings)
+        db.save_local(persist_dir)
+        return db
 
 # Load vectorstore
 db = get_vectorstore()
@@ -61,6 +81,8 @@ def parse_llm_response(response: str):
     # Primeiro tenta pelo formato esperado (com **)
     name_match = re.search(r"\*\*Brand Name:\*\*\s*(.+)", response)
     slogan_match = re.search(r"\*\*Slogan:\*\*\s*(.+)", response)
+    logo_mark = re.search(r"\*\*Logo Mark:\*\*\s*(.+)", response)
+    color = re.search(r"\*\*Color:\*\*\s*(.+)", response)
     concept_match = re.search(r"\*\*Branding Concept:\*\*\s*(.+)", response, re.DOTALL)
 
     # Se não achar, tenta pegar versões mais soltas
@@ -70,14 +92,22 @@ def parse_llm_response(response: str):
     if not slogan_match:
         slogan_match = re.search(r"(?i)(?:Slogan)[:\-]?\s*([^\n]+)", response)
 
+    if not logo_mark:
+        logo_mark = re.search(r"(?i)(?:Logo Mark)[:\-]?\s*(.+)", response, re.DOTALL)
+    
+    if not color:
+        color = re.search(r"(?i)(?:Color)[:\-]?\s*(.+)", response, re.DOTALL)
+
     if not concept_match:
         concept_match = re.search(r"(?i)(?:Branding Concept)[:\-]?\s*(.+)", response, re.DOTALL)
 
     name = name_match.group(1).strip() if name_match else "Name not generated"
     slogan = slogan_match.group(1).strip() if slogan_match else "Slogan not generated"
+    logo_mark = logo_mark.group(1).strip() if logo_mark else "Logo Mark not generated"
+    color = color.group(1).strip() if color else "Logo Mark not generated"
     concept = concept_match.group(1).strip() if concept_match else "Concept not generated"
 
-    return name, slogan, concept
+    return name, slogan, concept, logo_mark, color
 
 # Generate branding
 def generate_branding(description: str):
@@ -94,10 +124,14 @@ You are a branding expert. Based on the description below and the provided refer
 ⚠️ Important:
 - Return ONLY ONE brand name, ONE slogan, and ONE short branding concept.
 - Do NOT generate multiple options.
+- Choice one of these colors: 
+    green, mint, bright, spring, aqua, soft, summer, coastal, cream, warm, pink, blue, earthy, neutral, elegant, vibrant
 - Follow this exact format:
 
 **Brand Name:** <creative brand name>  
-**Slogan:** <short impactful slogan>  
+**Slogan:** <short impactful slogan>
+**Logo Mark: <basic logo mark>**
+**Color:** <green, mint, bright, spring, aqua, soft, summer, coastal, cream, warm, pink, blue, earthy, neutral, elegant OR vibrant>
 **Branding Concept:** <short explanation>
 
 User description:
@@ -109,10 +143,12 @@ Reference keywords or insights:
     response = llm.invoke(prompt)
     print("LLM Response:", response)
 
-    name, slogan, concept = parse_llm_response(response)
+    name, slogan, concept, logo, color = parse_llm_response(response)
 
     return {
         "name": name,
         "slogan": slogan,
+        "logo_mark": logo,
+        "color": color,
         "explanation": concept
     }
