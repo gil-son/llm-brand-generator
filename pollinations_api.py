@@ -1,8 +1,8 @@
-import requests
-from PIL import Image
+import httpx
+from PIL import Image, ImageDraw
 from io import BytesIO
 
-def generate_logo_image(prompt: str):
+async def generate_logo_image(prompt: str):
     """
     Generate an image for the slogan using Pollinations.ai.
     Falls back to a simple placeholder if request fails.
@@ -10,14 +10,13 @@ def generate_logo_image(prompt: str):
     try:
         safe_prompt = prompt.replace(" ", "_")
         print("Safe Prompt: ",safe_prompt)
-        url = f"https://pollinations.ai/p/{safe_prompt}"
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return Image.open(BytesIO(response.content))
+        url = f"https://image.pollinations.ai/prompt/{safe_prompt}"  # ✅ nova URL
+        async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            return Image.open(BytesIO(resp.content))
     except Exception as e:
         print("⚠️ Erro ao gerar imagem:", e)
-        # fallback: return white placeholder with slogan text
-        from PIL import ImageDraw
         img = Image.new("RGB", (512, 512), color="white")
         draw = ImageDraw.Draw(img)
         draw.text((10, 250), prompt, fill="black")
