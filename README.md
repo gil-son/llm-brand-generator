@@ -26,32 +26,58 @@ After approximately one minute, you will receive the recommended items:
 <img src="https://thumbs2.imgbox.com/69/df/V77PkJPR_t.png" width="70%"/> 
 </div>
 
-## <img src="https://cdn-icons-png.flaticon.com/512/4380/4380529.png" width="80"/> How its works?
-
-In the soon
-
 ---
 
-## <img src="https://cdn-icons-png.flaticon.com/512/18310/18310876.png" width="80"/> Project Structure
+
+## <img src="https://cdn-icons-png.flaticon.com/512/4380/4380529.png" width="80"/> How its works?
+
+This project combines **local LLMs with cloud APIs** to generate branding suggestions:
+
+1. **Ollama (local LLM runtime)**  
+   - You need to have [Ollama](https://ollama.ai) installed on your system.  
+   - The Python code (via `langchain-community`) connects to Ollama’s local server (default: `http://localhost:11434`) using the model `llama3.2`.  
+   - Ollama handles downloading, storing, and running the model.  
+
+2. **LangChain (retrieval + prompting)**  
+   - Loads reference documents from the `docs/` folder (PDF/TXT).  
+   - Uses **FAISS** to build or reuse a vector store.  
+   - Provides context to the LLM for better branding suggestions.  
+
+3. **Branding generation process**  
+   - You describe your business/idea in the Streamlit interface.  
+   - The app queries Ollama with context + your description.  
+   - The model outputs:
+     - **Brand Name**  
+     - **Slogan**  
+     - **Logo Mark idea**  
+     - **Color**  
+     - **Branding Concept**  
+
+4. **Visual generation**  
+   - **Logo image** is generated using [Pollinations.ai](https://pollinations.ai).  
+   - **Color palette** is fetched from [ColorMagic](https://colormagic.app) and overlaid with the slogan.  
+
+### System Architecture
+
+```mermaid
+
+flowchart TD
+    User([User Input]) --> Streamlit[Streamlit UI]
+    Streamlit --> Agent[LangChain Agent]
+    Agent -->|RAG| Vectorstore[(FAISS Vectorstore)]
+    Agent --> Ollama((Ollama llama3.2))
+    Agent --> Pollinations[Pollinations.ai - Logo Image]
+    Agent --> Colormagic[ColorMagic API - Palettes]
+    Ollama --> Result[Branding Results]
+    Pollinations --> Result
+    Colormagic --> Result
+    Result --> Streamlit
 
 ```
-llm-brand-generator/
-├─ app.py                # main interface (Streamlit + integration)
-├─ agent.py              # LangChain agent + RAG pipeline
-├─ assets.py             # base64 images and icons for the interface
-├─ pollinations_api.py   # image generation (Pollinations.ai)
-├─ colormagic_api.py     # integration with ColorMagic API (color palettes)
-├─ embeddings/           # scripts to generate embeddings
-│   └─ build_embeddings.py
-│
-├─ docs/                 # reference documents (PDF, TXT)
-│   ├─ branding_guide.txt
-│   └─ marketing_tips.pdf
-│
-├─ requirements.txt      # project dependencies
-└─ vectorstore/          # FAISS store (created automatically)
-   └─ index.faiss
-```
+
+
+
+---
 
 ## <img src="https://cdn-icons-png.flaticon.com/512/7778/7778962.png" width="80"/>  Setup
 
@@ -75,7 +101,24 @@ pip install -r requirements.txt
 ```
 streamlit run app.py
 
-### 4. Run the app
+
+### 4. Install and run Ollama
+
+- Make sure you have Ollama installed on your machine.
+- If not, download it from: https://ollama.com/download
+- Then pull the required model:
+
+```
+ollama pull llama3.2
+```
+
+You can test if the model is working by running:
+
+```
+ollama run llama3.2 "Hello world"
+```
+
+### 5. Run the app
 
 ```
 streamlit run app.py
@@ -120,7 +163,28 @@ For conditional parts, just use something trivial like if 2 > 1 to ensure the co
 import pdb; pdb.set_trace()
 ```
 
-<hr/>
+## <img src="https://cdn-icons-png.flaticon.com/512/18310/18310876.png" width="80"/> Project Structure
+
+```
+llm-brand-generator/
+├─ app.py                # main interface (Streamlit + integration)
+├─ agent.py              # LangChain agent + RAG pipeline
+├─ assets.py             # base64 images and icons for the interface
+├─ pollinations_api.py   # image generation (Pollinations.ai)
+├─ colormagic_api.py     # integration with ColorMagic API (color palettes)
+├─ embeddings/           # scripts to generate embeddings
+│   └─ build_embeddings.py
+│
+├─ docs/                 # reference documents (PDF, TXT)
+│   ├─ branding_guide.txt
+│   └─ marketing_tips.pdf
+│
+├─ requirements.txt      # project dependencies
+└─ vectorstore/          # FAISS store (created automatically)
+   └─ index.faiss
+```
+
+---
 
 <div align="center">
   <img src="https://i.ibb.co/kgNSnpv/git-support.png">
