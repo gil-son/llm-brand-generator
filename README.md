@@ -81,31 +81,10 @@ flowchart TD
 
 ## <img src="https://cdn-icons-png.flaticon.com/512/7778/7778962.png" width="80"/>  Setup
 
-### 1. Create a virtual environment
+### 1. Install and run Ollama
 
-```
-cd llm-brand-generator/
-python3 -m venv venv
-```
-
-### 2. Activate the environment
-
-```
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```
-pip install -r requirements.txt
-```
-streamlit run app.py
-
-
-### 4. Install and run Ollama
-
-- Make sure you have Ollama installed on your machine.
-- If not, download it from: https://ollama.com/download
+- Make sure you have **Ollama** installed on your machine.  
+- If not, download it here: https://ollama.com/download  
 - Then pull the required model:
 
 ```
@@ -118,7 +97,34 @@ You can test if the model is working by running:
 ollama run llama3.2 "Hello world"
 ```
 
-### 5. Run the app
+### 2. Clone the repository
+
+```
+git clone https://github.com/gil-son/llm-brand-generator.git
+```
+
+
+### 3. Create a virtual environment
+
+```
+cd llm-brand-generator/
+python3 -m venv venv
+```
+
+### 4. Activate the environment
+
+```
+source venv/bin/activate
+```
+
+### 5. Install dependencies
+
+```
+pip install -r requirements.txt
+```
+streamlit run app.py
+
+### 6. Run the app
 
 ```
 streamlit run app.py
