@@ -28,6 +28,13 @@ After approximately one minute, you will receive the recommended items:
 
 ---
 
+| ![img1](https://thumbs2.imgbox.com/56/e3/ihvrmuAV_t.png) | ![img2](https://thumbs2.imgbox.com/e0/36/ewodh6kJ_t.png) | ![img3](https://thumbs2.imgbox.com/7c/92/ZpeprS4z_t.png) |
+|------------------------------------------|------------------------------------------|------------------------------------------|
+
+
+
+---
+
 
 ## <img src="https://cdn-icons-png.flaticon.com/512/4380/4380529.png" width="80"/> How its works?
 
