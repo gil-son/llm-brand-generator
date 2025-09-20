@@ -17,6 +17,7 @@ if "current_image" not in st.session_state:
 
 
 def render_title():
+    """Render the app title with the current logo image."""
     st.markdown(
         f"""
         <h1 style="display: flex; align-items: center;">
@@ -36,7 +37,7 @@ description = st.text_area("Describe your brand/business:", height=150)
 
 
 async def generate_assets(result):
-    """Executa logo e paleta em paralelo."""
+    """Run logo and color palette generation concurrently."""
     logo_task = generate_logo_image(result["logo_mark"])
     palette_task = generate_slogan_palette(
         result["slogan"], query=result["color"].lower()
@@ -50,12 +51,10 @@ async def generate_assets(result):
 if st.button("Generate Branding"):
     if description.strip():
         with st.spinner("Generating..."):
-            # gera branding textual
             result = generate_branding(description)
             print("[logo_mark]:", result["logo_mark"])
             print("[color]:", result["color"].lower())
 
-            # roda assets em paralelo
             slogan_img, palette_img, palette_text, palette_colors = asyncio.run(
                 generate_assets(result)
             )
