@@ -1,9 +1,7 @@
-# LangChain core
-langchain==0.1.* 
+# LangChain + Ollama
+langchain==0.1.*
 langchain-community
-
-# Ollama SDK
-ollama==0.5.3 
+ollama==0.5.3
 
 # FAISS for vector search
 faiss-cpu==1.10.0 
@@ -11,19 +9,12 @@ faiss-cpu==1.10.0
 # Streamlit for interface
 streamlit==1.43.2
 
-# PDF / TXT loader and text manipulation
+# Document loaders
 pypdf==6.0.0
-python-docx==0.8.11
-tiktoken==0.11.0 
 
-# Vector embeddings
-sentence-transformers
-
-# General dependencies
-numpy
-pandas
+# Images
 pillow==11.3.0
-python-dotenv==1.1.0
+httpx
 
-# Craiyon (Image generation)
-pollinations-api==0.1.5
+# Env management
+python-dotenv==1.1.0
